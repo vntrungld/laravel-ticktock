@@ -26,7 +26,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Vntrungld\\LaravelTicktock\\LaravelTicktockServiceProvider"
+                "Vntrungld\\LaravelTicktock\\TickTockServiceProvider"
             ],
             "aliases": {
                 "Ticktock": "Vntrungld\\LaravelTicktock\\Facades\\Ticktock"
