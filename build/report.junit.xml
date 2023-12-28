@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/trungld/work/trungld/ltt/phpunit.xml.dist" tests="4" assertions="10" errors="0" failures="0" skipped="0" time="5.054237">
+    <testsuite name="TrungLD Test Suite" tests="4" assertions="10" errors="0" failures="0" skipped="0" time="5.054237">
+      <testsuite name="Vntrungld\LaravelTicktock\Tests\TickTockTest" file="/home/trungld/work/trungld/ltt/tests/TickTockTest.php" tests="4" assertions="10" errors="0" failures="0" skipped="0" time="5.054237">
+        <testcase name="test_can_calculate_multiple_processing_times_in_milliseconds" file="/home/trungld/work/trungld/ltt/tests/TickTockTest.php" line="9" class="Vntrungld\LaravelTicktock\Tests\TickTockTest" classname="Vntrungld.LaravelTicktock.Tests.TickTockTest" assertions="4" time="2.041193"/>
+        <testcase name="test_cannot_calculate_processing_time_of_a_non_existing_timer" file="/home/trungld/work/trungld/ltt/tests/TickTockTest.php" line="41" class="Vntrungld\LaravelTicktock\Tests\TickTockTest" classname="Vntrungld.LaravelTicktock.Tests.TickTockTest" assertions="1" time="0.002563"/>
+        <testcase name="test_can_log_processing_time" file="/home/trungld/work/trungld/ltt/tests/TickTockTest.php" line="47" class="Vntrungld\LaravelTicktock\Tests\TickTockTest" classname="Vntrungld.LaravelTicktock.Tests.TickTockTest" assertions="1" time="1.007231"/>
+        <testcase name="test_can_calculate_multiple_processing_times_in_seconds" file="/home/trungld/work/trungld/ltt/tests/TickTockTest.php" line="25" class="Vntrungld\LaravelTicktock\Tests\TickTockTest" classname="Vntrungld.LaravelTicktock.Tests.TickTockTest" assertions="4" time="2.003251"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
