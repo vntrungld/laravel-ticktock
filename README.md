@@ -16,7 +16,7 @@ composer require vntrungld/laravel-ticktock
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-ticktock-config"
+php artisan vendor:publish --provider="Vntrungld\LaravelTicktock\TickTockServiceProvider"
 ```
 
 ## Usage
@@ -70,7 +70,7 @@ dump($delta); // 321
 ## Testing
 
 ```bash
-composer test
+phpunit
 ```
 
 ## Changelog
