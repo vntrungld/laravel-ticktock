@@ -13,65 +13,102 @@ You can install the package via composer:
 composer require vntrungld/laravel-ticktock
 ```
 
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --provider="Vntrungld\LaravelTicktock\TickTockServiceProvider"
-```
-
 ## Usage
 
-You can use `tick` and `tock` functions to measure the time of your code.
+Use `tts` to start a timer for a block of code
+
+Use `tte` to end a timer for a block of code
+
+Use `tt` to capture the time of a block of code
+
+Eg:
 
 ```php
-tick('test 1')
-// your first code here
-tock('test 1')
-
-tick('test 2')
-// your second code here
-tock('test 2')
+tts('test 1')
+    doSomething();tt('do something');
+    doSomethingElse();tt('do something else');
+tte()
 ```
 
 Or you can use facade `Ticktock` to measure the time of your code.
 
 ```php
 Ticktock::start('test 1')
-// your first code here
-Ticktock::end('test 1')
-
-Ticktock::start('test 2')
-// your second code here
-Ticktock::end('test 2')
+    doSomething(); Ticktock::capture('do something');
+    doSomethingElse(); Ticktock::capture('do something else');
+Ticktock::end()
 ```
 
-Then go to `laravel.log` if you use default log channel you will see something like:
+After that you can dump, dd or log this by using:
+```php
+ttd(); // dump
+ttdd(); // dd
+ttl(); // log
+ttr(); // string
 
-```bash
-[2021-08-05 10:00:00] local.DEBUG: [Ticktock] Process test 1 takes 123ms
-[2021-08-05 10:00:01] local.DEBUG: [Ticktock] Process test 2 takes 321ms
+Ticktock::dump(); // dump
+Ticktock::dd(); // dd
+Ticktock::log(); // log
+Ticktock::render(); // string
 ```
 
-You can also get the delta time by using `tock` or `Ticktock::end`.
+The output will be
+```text
+test 1 -- 30ms
+├── do something -- 10ms
+└── do something else -- 20ms
+```
+
+You can nest many levels as you want.
 
 ```php
-tick('test 1');
-// your first code here
-$delta = tock('test 1');
-dump($delta); // 123
-
-Ticktock::start('test 2');
-// your second code here
-$delta = Ticktock::end('test 2');
-dump($delta); // 321
+tts('total');
+    usleep(10 * 1000);tt('child1');
+    usleep(20 * 1000);tt('child2');
+    tts('child3');
+        usleep(5 * 1000);tt('child3.1');
+        usleep(7*1000);tt('child3.2');
+        tts('child3.3');
+            usleep(3 * 1000);tt('child3.3.1');
+            usleep(4 * 1000);tt('child3.3.2');
+        tte();
+        usleep(18 * 1000);tt('child3.4');
+        tts('child3.5');
+            usleep(8 * 1000);tt('child3.5.1');
+            usleep(9 * 1000);tt('child3.5.2');
+        tte();
+    tte();
+    tts('child4');
+        usleep(10 * 1000);tt('child4.1');
+        usleep(15 * 1000);tt('child4.2');
+        usleep(20 * 1000);tt('child4.3');
+    tte();
+tte();
 ```
 
+The output will be
+```text
+total -- 132ms
+├── child1 -- 10ms
+├── child2 -- 20ms
+├── child3 -- 56ms
+│   ├── child3.1 -- 5ms
+│   ├── child3.2 -- 7ms
+│   ├── child3.3 -- 8ms
+│   │   ├── child3.3.1 -- 3ms
+│   │   └── child3.3.2 -- 4ms
+│   ├── child3.4 -- 18ms
+│   └── child3.5 -- 18ms
+│       ├── child3.5.1 -- 8ms
+│       └── child3.5.2 -- 9ms
+└── child4 -- 46ms
+    ├── child4.1 -- 10ms
+    ├── child4.2 -- 15ms
+    └── child4.3 -- 20ms
+```
 
 ## Testing
-
-```bash
-phpunit
-```
+I have not written any tests yet. I will write them soon.
 
 ## Changelog
 
