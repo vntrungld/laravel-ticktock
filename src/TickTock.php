@@ -6,44 +6,82 @@ use Illuminate\Support\Facades\Log;
 
 class TickTock
 {
-    protected $times = [];
+
+    /**
+     * @var Node
+     */
+    protected $root;
+
+    /**
+     * @var array<Node>
+     */
+    protected $cursors = [];
 
     /**
      * Start a timer
      */
-    public function start($name)
+    public function start($name = 'total')
     {
-        $this->times[$name] = microtime(true);
+        if (empty($this->cursors)) {
+            $node = new Node($name);
+            $node->start();
+            $this->root = $node;
+        } else {
+            $current_node = end($this->cursors);
+            $node = $current_node->addChild($name);
+        }
+
+        $this->cursors[] = $node;
+    }
+
+    /**
+     * Capture a timer
+     *
+     * @param $name
+     * @return void
+     */
+    public function capture($name)
+    {
+        $current_node = end($this->cursors);
+        $node = $current_node->addChild($name);
+        $node->end();
+
+        return $node->getDuration();
     }
 
     /**
      * End a timer
      */
-    public function end($name)
+    public function end()
     {
-        $end_time = microtime(true);
+        $node = array_pop($this->cursors);
+        $node->end();
 
-        if (! array_key_exists($name, $this->times)) {
-            return null;
-        }
+        return $node->getDuration();
+    }
 
-        $start_time = $this->times[$name];
-        $delta_time = $end_time - $start_time;
-        $unit = config('ticktock.unit');
+    public function dump()
+    {
+        dump($this->render());
+    }
 
-        if ($unit === 'ms') {
-            $delta_time *= 1000;
-        }
+    public function dd()
+    {
+        dd($this->render());
+    }
 
-        if (config('ticktock.log') === true) {
-            $message = config('ticktock.message');
-            $message = str_replace([':name', ':time', ':unit'], [$name, $delta_time, $unit], $message);
+    public function log()
+    {
+        Log::debug(PHP_EOL . '[Ticktock]' . PHP_EOL . $this->render());
+    }
 
-            Log::debug("[Ticktock] $message");
-        }
-
-        unset($this->times[$name]);
-
-        return $delta_time;
+    /**
+     * Render the tree
+     *
+     * @return string
+     */
+    public function render(): string
+    {
+        return $this->root->render();
     }
 }

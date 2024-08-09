@@ -3,56 +3,35 @@
 namespace Vntrungld\LaravelTicktock\Tests;
 
 use Illuminate\Support\Facades\Log;
+use Vntrungld\LaravelTicktock\Facades\TickTock;
 
 class TickTockTest extends TestCase
 {
-    public function test_can_calculate_multiple_processing_times_in_milliseconds()
+    public function test_a()
     {
-        config(['ticktock.unit' => 'ms']);
-        tick('test1');
-        sleep(1);
-        $delta_time1 = tock('test1');
-        $this->assertGreaterThan(1000, $delta_time1);
-        $this->assertLessThan(1001, $delta_time1);
+        tts('total');
+            usleep(10 * 1000);tt('child1');
+            usleep(20 * 1000);tt('child2');
+            tts('child3');
+                usleep(5 * 1000);tt('child3.1');
+                usleep(7*1000);tt('child3.2');
+                tts('child3.3');
+                    usleep(3 * 1000);tt('child3.3.1');
+                    usleep(4 * 1000);tt('child3.3.2');
+                tte();
+                usleep(18 * 1000);tt('child3.4');
+                tts('child3.5');
+                    usleep(8 * 1000);tt('child3.5.1');
+                    usleep(9 * 1000);tt('child3.5.2');
+                tte();
+            tte();
+            tts('child4');
+                usleep(10 * 1000);tt('child4.1');
+                usleep(15 * 1000);tt('child4.2');
+                usleep(20 * 1000);tt('child4.3');
+            tte();
+        tte();
 
-        tick('test2');
-        sleep(1);
-        $delta_time2 = tock('test2');
-        $this->assertGreaterThan(1000, $delta_time2);
-        $this->assertLessThan(1001, $delta_time2);
-    }
-
-    public function test_can_calculate_multiple_processing_times_in_seconds()
-    {
-        config(['ticktock.unit' => 's']);
-        tick('test1');
-        sleep(1);
-        $delta_time1 = tock('test1');
-        $this->assertGreaterThan(1, $delta_time1);
-        $this->assertLessThan(1.001, $delta_time1);
-
-        tick('test2');
-        sleep(1);
-        $delta_time2 = tock('test2');
-        $this->assertGreaterThan(1, $delta_time2);
-        $this->assertLessThan(1.001, $delta_time2);
-    }
-
-    public function test_cannot_calculate_processing_time_of_a_non_existing_timer()
-    {
-        $delta_time = tock('test3');
-        $this->assertNull($delta_time);
-    }
-
-    public function test_can_log_processing_time()
-    {
-        $log = Log::shouldReceive('debug');
-
-        config()->set('ticktock.log', true);
-        tick('test');
-        sleep(1);
-        tock('test');
-
-        $log->once();
+        ttdd();
     }
 }
