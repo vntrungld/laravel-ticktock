@@ -1,7 +1,7 @@
 <?php
 
 if (! function_exists('tts')) {
-    function tts($name)
+    function tts($name = null)
     {
         return \Vntrungld\LaravelTicktock\Facades\TickTock::start($name);
     }
@@ -15,7 +15,7 @@ if (! function_exists('tte')) {
 }
 
 if (! function_exists('tt')) {
-    function tt($name)
+    function tt($name = null)
     {
         return \Vntrungld\LaravelTicktock\Facades\TickTock::capture($name);
     }
