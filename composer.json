@@ -3,12 +3,14 @@
     "description": "Laravel TickTock - A hierarchical code execution timer for Laravel",
     "require": {
         "php": "~7.0|~8.0",
-        "illuminate/support": "^5.5|^6|^7|^8|^9|^10|^11|^12"
+        "illuminate/log": "^5.5|^6|^7|^8|^9|^10|^11|^12|^13",
+        "illuminate/support": "^5.5|^6|^7|^8|^9|^10|^11|^12|^13",
+        "symfony/var-dumper": "^3.3|^4|^5|^6|^7|^8"
     },
     "require-dev": {
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^6.5|^7|^8|^9|^10|^11",
-        "orchestra/testbench": "^3.5|^4|^5|^6|^7|^8|^9|^10"
+        "orchestra/testbench": "^3.5|^4|^5|^6|^7|^8|^9|^10|^11"
     },
     "license": "MIT",
     "autoload": {

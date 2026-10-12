@@ -19,6 +19,7 @@ A hierarchical code execution timer for Laravel. Measure and visualize the time 
 | 10.x    | >= 8.1    |
 | 11.x    | >= 8.2    |
 | 12.x    | >= 8.2    |
+| 13.x    | >= 8.3    |
 
 ## Installation
 
