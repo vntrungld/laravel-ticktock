@@ -10,12 +10,21 @@ class Node
     protected $name;
 
     /**
-     * @var int
+     * @var Clock
+     */
+    protected $clock;
+
+    /**
+     * Start time in milliseconds
+     *
+     * @var float
      */
     protected $start_time;
 
     /**
-     * @var int
+     * End time in milliseconds
+     *
+     * @var float|null
      */
     protected $end_time;
 
@@ -29,16 +38,18 @@ class Node
      * Node constructor.
      *
      * @param string $name
+     * @param Clock|null $clock
      */
-    public function __construct(string $name)
+    public function __construct(string $name, $clock = null)
     {
         $this->name = $name;
+        $this->clock = $clock ?: new Clock();
     }
 
     /**
      * Set the start time
      *
-     * @param $time
+     * @param float $time
      * @return void
      */
     public function setStartTime($time)
@@ -49,21 +60,33 @@ class Node
     /**
      * Start the timer
      *
+     * @param float|null $time
      * @return void
      */
-    public function start()
+    public function start($time = null)
     {
-        $this->start_time = microtime(true);
+        $this->start_time = $time === null ? $this->clock->now() : $time;
     }
 
     /**
      * End the timer
      *
+     * @param float|null $time
      * @return void
      */
-    public function end()
+    public function end($time = null)
     {
-        $this->end_time = microtime(true);
+        $this->end_time = $time === null ? $this->clock->now() : $time;
+    }
+
+    /**
+     * Determine if the timer has not been ended yet
+     *
+     * @return bool
+     */
+    public function isRunning(): bool
+    {
+        return $this->end_time === null;
     }
 
     /**
@@ -74,13 +97,10 @@ class Node
      */
     public function addChild($name): Node
     {
-        $node = new Node($name);
+        $node = new Node($name, $this->clock);
+        $last_child = $this->getLastChild();
 
-        if (empty($this->children)) {
-            $node->setStartTime($this->start_time);
-        } else {
-            $node->setStartTime($this->getLastChild()->end_time);
-        }
+        $node->setStartTime($last_child ? $last_child->end_time : $this->start_time);
 
         $this->children[] = $node;
 
@@ -98,13 +118,15 @@ class Node
     }
 
     /**
-     * Get the duration
+     * Get the duration in milliseconds, measured up to now if still running
      *
      * @return float
      */
     public function getDuration(): float
     {
-        return round(($this->end_time - $this->start_time) * 1000);
+        $end_time = $this->isRunning() ? $this->clock->now() : $this->end_time;
+
+        return round($end_time - $this->start_time, 2);
     }
 
     /**
@@ -116,7 +138,8 @@ class Node
      */
     public function render(string $parent_prefix = '', string $child_prefix = ''): string
     {
-        $output = $parent_prefix . $this->name . ' -- ' . $this->getDuration() . 'ms' . PHP_EOL;
+        $output = $parent_prefix . $this->name . ' -- ' . sprintf('%.2f', $this->getDuration()) . 'ms'
+            . ($this->isRunning() ? ' (running)' : '') . PHP_EOL;
 
         if (empty($this->children)) {
             return $output;

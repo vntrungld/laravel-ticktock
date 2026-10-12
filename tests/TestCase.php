@@ -3,34 +3,28 @@
 namespace Vntrungld\LaravelTicktock\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
+use Vntrungld\LaravelTicktock\Clock;
 use Vntrungld\LaravelTicktock\TickTockServiceProvider;
 
 class TestCase extends Orchestra
 {
+    /**
+     * @var FakeClock
+     */
+    protected $clock;
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $this->clock = new FakeClock();
+
+        $app->instance(Clock::class, $this->clock);
+    }
+
     protected function getPackageProviders($app)
     {
         return [
             TickTockServiceProvider::class,
         ];
-    }
-
-    /**
-     * Assert that two values are equal within a delta.
-     * Compatibility wrapper for PHPUnit 6.x - 11.x.
-     *
-     * @param mixed $expected
-     * @param mixed $actual
-     * @param float $delta
-     * @param string $message
-     */
-    protected function assertDurationEquals($expected, $actual, $delta, $message = '')
-    {
-        if (method_exists(get_parent_class($this), 'assertEqualsWithDelta')) {
-            $this->assertEqualsWithDelta($expected, $actual, $delta, $message);
-            return;
-        }
-
-        $this->assertEquals($expected, $actual, $message, $delta);
     }
 
     /**

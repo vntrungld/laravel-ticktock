@@ -2,14 +2,18 @@
 
 namespace Vntrungld\LaravelTicktock;
 
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
 
 class TickTock
 {
+    /**
+     * @var Clock
+     */
+    protected $clock;
 
     /**
-     * @var Node
+     * @var Node|null
      */
     protected $root;
 
@@ -19,6 +23,21 @@ class TickTock
     protected $cursors = [];
 
     /**
+     * @var string|null
+     */
+    protected static $facade_file;
+
+    /**
+     * TickTock constructor.
+     *
+     * @param Clock $clock
+     */
+    public function __construct(Clock $clock)
+    {
+        $this->clock = $clock;
+    }
+
+    /**
      * Start a timer
      *
      * @param null $suffix
@@ -26,15 +45,15 @@ class TickTock
      */
     public function start($suffix = null)
     {
-        $name = $this->getProcessName() . ($suffix ? ' - ' . $suffix : '');
+        $name = $this->getCaller()['scope'] . ($suffix ? ' - ' . $suffix : '');
+        $current_node = end($this->cursors);
 
-        if (empty($this->cursors)) {
-            $node = new Node($name);
+        if ($current_node) {
+            $node = $current_node->addChild($name);
+        } else {
+            $node = new Node($name, $this->clock);
             $node->start();
             $this->root = $node;
-        } else {
-            $current_node = end($this->cursors);
-            $node = $current_node->addChild($name);
         }
 
         $this->cursors[] = $node;
@@ -44,16 +63,21 @@ class TickTock
      * Capture a timer
      *
      * @param $suffix
-     * @return float
+     * @return float|null
      */
     public function capture($suffix = null)
     {
-        $line = 'Line ' . $this->getLineNumber();
-        $name = $line . ($suffix ? ' - ' . $suffix : '');
-
+        $now = $this->clock->now();
         $current_node = end($this->cursors);
+
+        if (! $current_node) {
+            return null;
+        }
+
+        $name = 'Line ' . $this->getCaller()['line'] . ($suffix ? ' - ' . $suffix : '');
+
         $node = $current_node->addChild($name);
-        $node->end();
+        $node->end($now);
 
         return $node->getDuration();
     }
@@ -61,14 +85,53 @@ class TickTock
     /**
      * End a timer
      *
-     * @return float
+     * @return float|null
      */
     public function end()
     {
+        $now = $this->clock->now();
         $node = array_pop($this->cursors);
-        $node->end();
+
+        if (! $node) {
+            return null;
+        }
+
+        $node->end($now);
 
         return $node->getDuration();
+    }
+
+    /**
+     * Time a callback, ending its timer even when the callback throws
+     *
+     * @param string|null $suffix
+     * @param callable $callback
+     * @return mixed
+     */
+    public function measure($suffix, callable $callback)
+    {
+        $depth = count($this->cursors);
+
+        $this->start($suffix);
+
+        try {
+            return $callback();
+        } finally {
+            while (count($this->cursors) > $depth) {
+                $this->end();
+            }
+        }
+    }
+
+    /**
+     * Discard all timers
+     *
+     * @return void
+     */
+    public function reset()
+    {
+        $this->root = null;
+        $this->cursors = [];
     }
 
     /**
@@ -108,42 +171,50 @@ class TickTock
      */
     public function render(): string
     {
-        return $this->root->render();
+        return $this->root ? $this->root->render() : '';
     }
 
     /**
-     * Get the method name
+     * Find the line and enclosing scope of the first call made from outside
+     * this package (skipping the helpers and the facade)
      *
-     * @return mixed
+     * @return array{line: int|null, scope: string}
      */
-    protected function getProcessName()
+    protected function getCaller(): array
     {
-        $backtrace = debug_backtrace();
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 16);
 
-        $class = Arr::get($backtrace, '3.class', '');
-        $function = $backtrace[3]['function'];
+        foreach ($backtrace as $index => $frame) {
+            if (! isset($frame['file']) || $this->isInternalFile($frame['file'])) {
+                continue;
+            }
 
-        if ($function === 'tts') { // if called from helper function
-            $class = $backtrace[4]['class'];
-            $function = $backtrace[4]['function'];
+            $scope = isset($backtrace[$index + 1]) ? $backtrace[$index + 1] : null;
+
+            if (! $scope || in_array($scope['function'], ['include', 'include_once', 'require', 'require_once'], true)) {
+                return ['line' => $frame['line'], 'scope' => basename($frame['file'])];
+            }
+
+            $class = isset($scope['class']) ? $scope['class'] . '::' : '';
+
+            return ['line' => $frame['line'], 'scope' => $class . $scope['function']];
         }
 
-        return "$class::$function";
+        return ['line' => null, 'scope' => 'unknown'];
     }
 
     /**
-     * Get the line number
+     * Determine if a file belongs to this package or the facade base class
      *
-     * @return mixed
+     * @param string $file
+     * @return bool
      */
-    protected function getLineNumber()
+    protected function isInternalFile($file): bool
     {
-        $backtrace = debug_backtrace();
-
-        if ($backtrace[3]['function'] === 'tt') { // if called from helper function
-            return $backtrace[3]['line'];
+        if (static::$facade_file === null) {
+            static::$facade_file = (new \ReflectionClass(Facade::class))->getFileName();
         }
 
-        return $backtrace[2]['line'];
+        return strpos($file, __DIR__ . DIRECTORY_SEPARATOR) === 0 || $file === static::$facade_file;
     }
 }

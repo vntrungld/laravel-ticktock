@@ -2,146 +2,207 @@
 
 namespace Vntrungld\LaravelTicktock\Tests;
 
+use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Log;
+use Vntrungld\LaravelTicktock\Clock;
 use Vntrungld\LaravelTicktock\Facades\TickTock;
+use Vntrungld\LaravelTicktock\Node;
 
 class TickTockTest extends TestCase
 {
+    /**
+     * @var array<string, int>
+     */
+    protected $lines = [];
+
     protected function parentMethod()
     {
         tts('parent suffix');
-        usleep(10 * 1000); tt();
-        usleep(20 * 1000); tt();
+        $this->clock->advance(10); tt(); $this->lines['p1'] = __LINE__;
+        $this->clock->advance(20); tt(); $this->lines['p2'] = __LINE__;
         $this->childMethod1();
         $this->childMethod2();
-        $duration = tte();
 
-        $this->assertDurationEquals(130, $duration, 15);
+        return tte();
     }
 
     protected function childMethod1()
     {
         tts();
-        usleep(5 * 1000); tt('child suffix');
-        usleep(7 * 1000); tt();
+        $this->clock->advance(5); tt('child suffix'); $this->lines['c1'] = __LINE__;
+        $this->clock->advance(7); tt(); $this->lines['c2'] = __LINE__;
         $this->childMethod13();
-        usleep(18 * 1000); tt();
+        $this->clock->advance(18); tt(); $this->lines['c4'] = __LINE__;
         $this->childMethod15();
-        $duration = tte();
 
-        $this->assertDurationEquals(56, $duration, 10);
+        return tte();
     }
 
     protected function childMethod13()
     {
         tts();
-        usleep(3 * 1000); tt();
-        usleep(4 * 1000); tt();
-        $duration = tte();
+        $this->clock->advance(3); tt(); $this->lines['c31'] = __LINE__;
+        $this->clock->advance(4); tt(); $this->lines['c32'] = __LINE__;
 
-        $this->assertDurationEquals(7, $duration, 5);
+        return tte();
     }
 
     protected function childMethod15()
     {
         tts();
-        usleep(8 * 1000); tt();
-        usleep(9 * 1000); tt();
-        $duration = tte();
+        $this->clock->advance(8); tt(); $this->lines['c51'] = __LINE__;
+        $this->clock->advance(9); tt(); $this->lines['c52'] = __LINE__;
 
-        $this->assertDurationEquals(17, $duration, 5);
+        return tte();
     }
 
     protected function childMethod2()
     {
         tts();
-        usleep(10 * 1000); tt();
-        usleep(15 * 1000); tt();
-        usleep(20 * 1000); tt();
-        $duration = tte();
+        $this->clock->advance(10); tt(); $this->lines['d1'] = __LINE__;
+        $this->clock->advance(15); tt(); $this->lines['d2'] = __LINE__;
+        $this->clock->advance(20); tt(); $this->lines['d3'] = __LINE__;
 
-        $this->assertDurationEquals(45, $duration, 10);
+        return tte();
     }
 
     public function test_print()
     {
-        $this->parentMethod();
-        $output = ttr();
-        $this->assertOutputContains('Vntrungld\LaravelTicktock\Tests\TickTockTest::parentMethod - parent suffix', $output);
-        $this->assertOutputContains('├── Line 13', $output);
-        $this->assertOutputContains('├── Line 14', $output);
-        $this->assertOutputContains('├── Vntrungld\LaravelTicktock\Tests\TickTockTest::childMethod1', $output);
-        $this->assertOutputContains('│   ├── Line 25 - child suffix', $output);
-        $this->assertOutputContains('│   ├── Line 26', $output);
-        $this->assertOutputContains('│   ├── Vntrungld\LaravelTicktock\Tests\TickTockTest::childMethod13', $output);
-        $this->assertOutputContains('│   │   ├── Line 38', $output);
-        $this->assertOutputContains('│   │   └── Line 39', $output);
-        $this->assertOutputContains('│   ├── Line 28', $output);
-        $this->assertOutputContains('│   └── Vntrungld\LaravelTicktock\Tests\TickTockTest::childMethod15', $output);
-        $this->assertOutputContains('│       ├── Line 48', $output);
-        $this->assertOutputContains('│       └── Line 49', $output);
-        $this->assertOutputContains('└── Vntrungld\LaravelTicktock\Tests\TickTockTest::childMethod2', $output);
-        $this->assertOutputContains('    ├── Line 58', $output);
-        $this->assertOutputContains('    ├── Line 59', $output);
-        $this->assertOutputContains('    └── Line 60', $output);
+        $this->assertSame(129.0, $this->parentMethod());
+
+        $class = self::class;
+        $l = $this->lines;
+        $expected = implode(PHP_EOL, [
+            "$class::parentMethod - parent suffix -- 129.00ms",
+            "├── Line {$l['p1']} -- 10.00ms",
+            "├── Line {$l['p2']} -- 20.00ms",
+            "├── $class::childMethod1 -- 54.00ms",
+            "│   ├── Line {$l['c1']} - child suffix -- 5.00ms",
+            "│   ├── Line {$l['c2']} -- 7.00ms",
+            "│   ├── $class::childMethod13 -- 7.00ms",
+            "│   │   ├── Line {$l['c31']} -- 3.00ms",
+            "│   │   └── Line {$l['c32']} -- 4.00ms",
+            "│   ├── Line {$l['c4']} -- 18.00ms",
+            "│   └── $class::childMethod15 -- 17.00ms",
+            "│       ├── Line {$l['c51']} -- 8.00ms",
+            "│       └── Line {$l['c52']} -- 9.00ms",
+            "└── $class::childMethod2 -- 45.00ms",
+            "    ├── Line {$l['d1']} -- 10.00ms",
+            "    ├── Line {$l['d2']} -- 15.00ms",
+            "    └── Line {$l['d3']} -- 20.00ms",
+        ]) . PHP_EOL;
+
+        $this->assertSame($expected, ttr());
     }
 
-    public function test_node_creation_and_duration()
+    public function test_facade_names_the_calling_method()
     {
-        $node = new \Vntrungld\LaravelTicktock\Node('test-node');
-        $node->start();
-        usleep(10 * 1000);
-        $node->end();
+        TickTock::start('single');
+        $this->clock->advance(10); TickTock::capture('step1'); $line = __LINE__;
+        $this->clock->advance(20);
 
-        $this->assertDurationEquals(10, $node->getDuration(), 5);
+        $this->assertSame(30.0, TickTock::end());
+        $this->assertSame(
+            self::class . '::test_facade_names_the_calling_method - single -- 30.00ms' . PHP_EOL
+            . "└── Line $line - step1 -- 10.00ms" . PHP_EOL,
+            TickTock::render()
+        );
     }
 
-    public function test_node_children_render()
+    public function test_direct_instance_names_the_calling_method()
     {
-        $node = new \Vntrungld\LaravelTicktock\Node('root');
-        $node->start();
+        $ticktock = app(\Vntrungld\LaravelTicktock\TickTock::class);
+        $ticktock->start('direct');
+        $ticktock->end();
 
-        $child1 = $node->addChild('child1');
-        usleep(5 * 1000);
-        $child1->end();
-
-        $child2 = $node->addChild('child2');
-        usleep(10 * 1000);
-        $child2->end();
-
-        $node->end();
-
-        $output = $node->render();
-        $this->assertOutputContains('root', $output);
-        $this->assertOutputContains('├── child1', $output);
-        $this->assertOutputContains('└── child2', $output);
+        $this->assertOutputContains(self::class . '::test_direct_instance_names_the_calling_method - direct', $ticktock->render());
     }
 
-    public function test_nested_node_render()
+    public function test_global_function_caller()
     {
-        $root = new \Vntrungld\LaravelTicktock\Node('root');
-        $root->start();
+        require_once __DIR__ . '/Fixtures/functions.php';
 
-        $child1 = $root->addChild('child1');
-        usleep(5 * 1000);
-        $child1->end();
+        ticktock_fixture_global_function();
 
-        $child2 = $root->addChild('child2');
-        $grandchild1 = $child2->addChild('grandchild1');
-        usleep(3 * 1000);
-        $grandchild1->end();
-        $grandchild2 = $child2->addChild('grandchild2');
-        usleep(4 * 1000);
-        $grandchild2->end();
-        $child2->end();
+        $this->assertOutputContains('ticktock_fixture_global_function - global -- ', ttr());
+    }
 
-        $root->end();
+    public function test_calls_without_start_do_not_crash()
+    {
+        $this->assertNull(tte());
+        $this->assertNull(tt());
+        $this->assertSame('', ttr());
+    }
 
-        $output = $root->render();
-        $this->assertOutputContains('├── child1', $output);
-        $this->assertOutputContains('└── child2', $output);
-        $this->assertOutputContains('    ├── grandchild1', $output);
-        $this->assertOutputContains('    └── grandchild2', $output);
+    public function test_measure_returns_callback_result()
+    {
+        $clock = $this->clock;
+        $result = TickTock::measure('work', function () use ($clock) {
+            $clock->advance(12);
+
+            return 'done';
+        });
+
+        $this->assertSame('done', $result);
+        $this->assertSame(self::class . '::test_measure_returns_callback_result - work -- 12.00ms' . PHP_EOL, ttr());
+    }
+
+    public function test_measure_ends_timers_when_callback_throws()
+    {
+        try {
+            TickTock::measure('outer', function () {
+                tts('left open');
+                throw new \RuntimeException('boom');
+            });
+            $this->fail('Exception was swallowed');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('boom', $e->getMessage());
+        }
+
+        $this->assertFalse(strpos(ttr(), '(running)'), 'All timers should be ended');
+
+        tts('next');
+        tte();
+
+        $this->assertStringStartsWith(self::class . '::test_measure_ends_timers_when_callback_throws - next', ttr());
+    }
+
+    public function test_render_marks_running_timers()
+    {
+        tts('open');
+        $this->clock->advance(5);
+
+        $this->assertOutputContains('- open -- 5.00ms (running)', ttr());
+    }
+
+    public function test_sub_millisecond_precision()
+    {
+        tts('fast');
+        $this->clock->advance(0.25);
+
+        $this->assertSame(0.25, tte());
+        $this->assertOutputContains('- fast -- 0.25ms', ttr());
+    }
+
+    public function test_reset_on_queue_job()
+    {
+        tts('stale');
+
+        event(new JobProcessing('sync', \Mockery::mock(Job::class)->shouldIgnoreMissing()));
+
+        $this->assertSame('', ttr());
+        $this->assertNull(tte());
+    }
+
+    public function test_composer_aliases_and_providers_exist()
+    {
+        $composer = json_decode(file_get_contents(__DIR__ . '/../composer.json'), true);
+        $laravel = $composer['extra']['laravel'];
+
+        foreach (array_merge($laravel['providers'], array_values($laravel['aliases'])) as $class) {
+            $this->assertTrue(class_exists($class), "Class [$class] does not exist");
+        }
     }
 
     public function test_facade_resolves_singleton()
@@ -152,44 +213,50 @@ class TickTockTest extends TestCase
         $this->assertSame($instance1, $instance2);
     }
 
-    public function test_single_level_timer()
-    {
-        $ticktock = app(\Vntrungld\LaravelTicktock\TickTock::class);
-        TickTock::start('single');
-        usleep(10 * 1000);
-        TickTock::capture('step1');
-        usleep(20 * 1000);
-        TickTock::capture('step2');
-        $duration = TickTock::end();
-
-        $this->assertDurationEquals(30, $duration, 10);
-
-        $output = TickTock::render();
-        $this->assertOutputContains('single', $output);
-        $this->assertOutputContains('step1', $output);
-        $this->assertOutputContains('step2', $output);
-    }
-
     public function test_log_output()
     {
         Log::shouldReceive('debug')->once();
 
         tts('log-test');
-        usleep(5 * 1000);
         tt();
         tte();
         ttl();
     }
 
-    public function test_render_contains_duration()
+    public function test_nested_node_render()
     {
-        $node = new \Vntrungld\LaravelTicktock\Node('timer');
-        $node->start();
-        usleep(10 * 1000);
-        $node->end();
+        $root = new Node('root', $this->clock);
+        $root->start();
 
-        $output = $node->render();
-        $this->assertOutputContains('ms', $output);
-        $this->assertOutputContains('timer -- ', $output);
+        $this->clock->advance(5);
+        $root->addChild('child1')->end();
+
+        $child2 = $root->addChild('child2');
+        $this->clock->advance(3);
+        $child2->addChild('grandchild1')->end();
+        $this->clock->advance(4);
+        $child2->addChild('grandchild2')->end();
+        $child2->end();
+
+        $root->end();
+
+        $this->assertSame(implode(PHP_EOL, [
+            'root -- 12.00ms',
+            '├── child1 -- 5.00ms',
+            '└── child2 -- 7.00ms',
+            '    ├── grandchild1 -- 3.00ms',
+            '    └── grandchild2 -- 4.00ms',
+        ]) . PHP_EOL, $root->render());
+    }
+
+    public function test_default_clock_is_monotonic_milliseconds()
+    {
+        $clock = new Clock();
+        $first = $clock->now();
+        usleep(2 * 1000);
+        $elapsed = $clock->now() - $first;
+
+        $this->assertGreaterThanOrEqual(1, $elapsed);
+        $this->assertLessThan(1000, $elapsed);
     }
 }
