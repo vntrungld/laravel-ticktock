@@ -36,7 +36,7 @@ For Laravel 5.5+, the service provider and facade are auto-discovered. For older
 ],
 
 'aliases' => [
-    'Ticktock' => Vntrungld\LaravelTicktock\Facades\Ticktock::class,
+    'Ticktock' => Vntrungld\LaravelTicktock\Facades\TickTock::class,
 ],
 ```
 

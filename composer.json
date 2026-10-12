@@ -29,7 +29,7 @@
                 "Vntrungld\\LaravelTicktock\\TickTockServiceProvider"
             ],
             "aliases": {
-                "Ticktock": "Vntrungld\\LaravelTicktock\\Facades\\Ticktock"
+                "Ticktock": "Vntrungld\\LaravelTicktock\\Facades\\TickTock"
             }
         }
     },
