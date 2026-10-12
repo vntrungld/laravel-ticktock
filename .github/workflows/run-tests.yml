@@ -60,6 +60,14 @@ jobs:
           extensions: mbstring
           coverage: none
 
+      # Old Laravel releases have security advisories and Carbon 1.x ships a
+      # Composer plugin; both block installs on recent Composer versions.
+      # Composer 2.2 (used on PHP 7.x) has no audit.block-insecure setting.
+      - name: Configure Composer
+        run: |
+          composer config --no-plugins allow-plugins.kylekatarnls/update-helper false
+          composer config audit.block-insecure false || true
+
       - name: Install dependencies
         run: |
           composer require "illuminate/support:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-update
