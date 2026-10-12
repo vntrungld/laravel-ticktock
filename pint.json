@@ -1,0 +1,6 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "no_multiple_statements_per_line": false
+    }
+}

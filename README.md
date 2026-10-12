@@ -130,6 +130,16 @@ $users = Ticktock::measure('load users', function () {
 composer test
 ```
 
+## Code Style
+
+The code is formatted with [Laravel Pint](https://github.com/laravel/pint) (see `pint.json`). Pint needs PHP 8.1+, so it is not a dev dependency (the package still supports PHP 7.0). Install it globally and run:
+
+```bash
+composer global require laravel/pint
+composer lint        # fix
+composer lint:test   # check only
+```
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

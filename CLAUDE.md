@@ -12,9 +12,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 composer install
 composer test                                   # vendor/bin/phpunit
 vendor/bin/phpunit --filter test_print          # single test
+composer lint                                   # Pint (installed globally, not in require-dev)
+composer lint:test                              # style check only, as run in CI
 ```
 
-There is no lint or build step. CI (`.github/workflows/run-tests.yml`) runs the suite across a PHP/Laravel matrix from PHP 7.0 + Laravel 5.5 up to PHP 8.2 + Laravel 12, swapping in `illuminate/support` and `orchestra/testbench` versions with `composer require ... --no-update`.
+There is no build step. Pint (`pint.json`, Laravel preset) needs PHP 8.1+, so it runs as a global tool and in a separate `pint.yml` workflow rather than through require-dev. `no_multiple_statements_per_line` is disabled on purpose: tests put `tt()` and `__LINE__` on the same line. The test CI (`.github/workflows/run-tests.yml`) runs the suite across a PHP/Laravel matrix from PHP 7.0 + Laravel 5.5 up to PHP 8.2 + Laravel 12, swapping in `illuminate/support` and `orchestra/testbench` versions with `composer require ... --no-update`.
 
 ## Compatibility constraints
 
