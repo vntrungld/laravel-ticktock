@@ -1,9 +1,24 @@
 # Laravel Ticktock
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/vntrungld/laravel-ticktock.svg?style=flat-square)](https://packagist.org/packages/vntrungld/laravel-ticktock)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/vntrungld/laravel-ticktock/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/vntrungld/laravel-ticktock/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/vntrungld/laravel-ticktock/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/vntrungld/laravel-ticktock/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/vntrungld/laravel-ticktock/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/vntrungld/laravel-ticktock/actions?query=workflow%3A"Run+Tests"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/vntrungld/laravel-ticktock.svg?style=flat-square)](https://packagist.org/packages/vntrungld/laravel-ticktock)
+
+A hierarchical code execution timer for Laravel. Measure and visualize the time spent in nested blocks of code with a tree-style output.
+
+## Requirements
+
+| Laravel | PHP       |
+|---------|-----------|
+| 5.5     | >= 7.0    |
+| 5.6-5.8 | >= 7.1   |
+| 6.x     | >= 7.2    |
+| 7.x     | >= 7.2    |
+| 8.x     | >= 7.3    |
+| 9.x     | >= 8.0    |
+| 10.x    | >= 8.1    |
+| 11.x    | >= 8.2    |
+| 12.x    | >= 8.2    |
 
 ## Installation
 
@@ -11,6 +26,18 @@ You can install the package via composer:
 
 ```bash
 composer require vntrungld/laravel-ticktock
+```
+
+For Laravel 5.5+, the service provider and facade are auto-discovered. For older setups, add them manually to `config/app.php`:
+
+```php
+'providers' => [
+    Vntrungld\LaravelTicktock\TickTockServiceProvider::class,
+],
+
+'aliases' => [
+    'Ticktock' => Vntrungld\LaravelTicktock\Facades\Ticktock::class,
+],
 ```
 
 ## Usage
@@ -109,7 +136,10 @@ total -- 132ms
 ```
 
 ## Testing
-I have not written any tests yet. I will write them soon.
+
+```bash
+composer test
+```
 
 ## Changelog
 
