@@ -15,7 +15,7 @@ class TestCase extends Orchestra
 
     protected function getEnvironmentSetUp($app)
     {
-        $this->clock = new FakeClock();
+        $this->clock = new FakeClock;
 
         $app->instance(Clock::class, $this->clock);
     }
@@ -31,14 +31,15 @@ class TestCase extends Orchestra
      * Assert that a string contains another string.
      * Compatibility wrapper for PHPUnit 6.x - 11.x.
      *
-     * @param string $needle
-     * @param string $haystack
-     * @param string $message
+     * @param  string  $needle
+     * @param  string  $haystack
+     * @param  string  $message
      */
     protected function assertOutputContains($needle, $haystack, $message = '')
     {
         if (method_exists(get_parent_class($this), 'assertStringContainsString')) {
             $this->assertStringContainsString($needle, $haystack, $message);
+
             return;
         }
 

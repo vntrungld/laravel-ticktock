@@ -29,8 +29,6 @@ class TickTock
 
     /**
      * TickTock constructor.
-     *
-     * @param Clock $clock
      */
     public function __construct(Clock $clock)
     {
@@ -40,12 +38,12 @@ class TickTock
     /**
      * Start a timer
      *
-     * @param null $suffix
+     * @param  null  $suffix
      * @return void
      */
     public function start($suffix = null)
     {
-        $name = $this->getCaller()['scope'] . ($suffix ? ' - ' . $suffix : '');
+        $name = $this->getCaller()['scope'].($suffix ? ' - '.$suffix : '');
         $current_node = end($this->cursors);
 
         if ($current_node) {
@@ -62,7 +60,6 @@ class TickTock
     /**
      * Capture a timer
      *
-     * @param $suffix
      * @return float|null
      */
     public function capture($suffix = null)
@@ -74,7 +71,7 @@ class TickTock
             return null;
         }
 
-        $name = 'Line ' . $this->getCaller()['line'] . ($suffix ? ' - ' . $suffix : '');
+        $name = 'Line '.$this->getCaller()['line'].($suffix ? ' - '.$suffix : '');
 
         $node = $current_node->addChild($name);
         $node->end($now);
@@ -104,8 +101,7 @@ class TickTock
     /**
      * Time a callback, ending its timer even when the callback throws
      *
-     * @param string|null $suffix
-     * @param callable $callback
+     * @param  string|null  $suffix
      * @return mixed
      */
     public function measure($suffix, callable $callback)
@@ -161,13 +157,11 @@ class TickTock
      */
     public function log()
     {
-        Log::debug(PHP_EOL . '[Ticktock]' . PHP_EOL . $this->render());
+        Log::debug(PHP_EOL.'[Ticktock]'.PHP_EOL.$this->render());
     }
 
     /**
      * Render the tree
-     *
-     * @return string
      */
     public function render(): string
     {
@@ -195,9 +189,9 @@ class TickTock
                 return ['line' => $frame['line'], 'scope' => basename($frame['file'])];
             }
 
-            $class = isset($scope['class']) ? $scope['class'] . '::' : '';
+            $class = isset($scope['class']) ? $scope['class'].'::' : '';
 
-            return ['line' => $frame['line'], 'scope' => $class . $scope['function']];
+            return ['line' => $frame['line'], 'scope' => $class.$scope['function']];
         }
 
         return ['line' => null, 'scope' => 'unknown'];
@@ -206,8 +200,7 @@ class TickTock
     /**
      * Determine if a file belongs to this package or the facade base class
      *
-     * @param string $file
-     * @return bool
+     * @param  string  $file
      */
     protected function isInternalFile($file): bool
     {
@@ -215,6 +208,6 @@ class TickTock
             static::$facade_file = (new \ReflectionClass(Facade::class))->getFileName();
         }
 
-        return strpos($file, __DIR__ . DIRECTORY_SEPARATOR) === 0 || $file === static::$facade_file;
+        return strpos($file, __DIR__.DIRECTORY_SEPARATOR) === 0 || $file === static::$facade_file;
     }
 }

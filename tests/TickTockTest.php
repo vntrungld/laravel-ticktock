@@ -91,7 +91,7 @@ class TickTockTest extends TestCase
             "    ├── Line {$l['d1']} -- 10.00ms",
             "    ├── Line {$l['d2']} -- 15.00ms",
             "    └── Line {$l['d3']} -- 20.00ms",
-        ]) . PHP_EOL;
+        ]).PHP_EOL;
 
         $this->assertSame($expected, ttr());
     }
@@ -104,8 +104,8 @@ class TickTockTest extends TestCase
 
         $this->assertSame(30.0, TickTock::end());
         $this->assertSame(
-            self::class . '::test_facade_names_the_calling_method - single -- 30.00ms' . PHP_EOL
-            . "└── Line $line - step1 -- 10.00ms" . PHP_EOL,
+            self::class.'::test_facade_names_the_calling_method - single -- 30.00ms'.PHP_EOL
+            ."└── Line $line - step1 -- 10.00ms".PHP_EOL,
             TickTock::render()
         );
     }
@@ -116,12 +116,12 @@ class TickTockTest extends TestCase
         $ticktock->start('direct');
         $ticktock->end();
 
-        $this->assertOutputContains(self::class . '::test_direct_instance_names_the_calling_method - direct', $ticktock->render());
+        $this->assertOutputContains(self::class.'::test_direct_instance_names_the_calling_method - direct', $ticktock->render());
     }
 
     public function test_global_function_caller()
     {
-        require_once __DIR__ . '/Fixtures/functions.php';
+        require_once __DIR__.'/Fixtures/functions.php';
 
         ticktock_fixture_global_function();
 
@@ -145,7 +145,7 @@ class TickTockTest extends TestCase
         });
 
         $this->assertSame('done', $result);
-        $this->assertSame(self::class . '::test_measure_returns_callback_result - work -- 12.00ms' . PHP_EOL, ttr());
+        $this->assertSame(self::class.'::test_measure_returns_callback_result - work -- 12.00ms'.PHP_EOL, ttr());
     }
 
     public function test_measure_ends_timers_when_callback_throws()
@@ -165,7 +165,7 @@ class TickTockTest extends TestCase
         tts('next');
         tte();
 
-        $this->assertStringStartsWith(self::class . '::test_measure_ends_timers_when_callback_throws - next', ttr());
+        $this->assertStringStartsWith(self::class.'::test_measure_ends_timers_when_callback_throws - next', ttr());
     }
 
     public function test_render_marks_running_timers()
@@ -197,7 +197,7 @@ class TickTockTest extends TestCase
 
     public function test_composer_aliases_and_providers_exist()
     {
-        $composer = json_decode(file_get_contents(__DIR__ . '/../composer.json'), true);
+        $composer = json_decode(file_get_contents(__DIR__.'/../composer.json'), true);
         $laravel = $composer['extra']['laravel'];
 
         foreach (array_merge($laravel['providers'], array_values($laravel['aliases'])) as $class) {
@@ -246,12 +246,12 @@ class TickTockTest extends TestCase
             '└── child2 -- 7.00ms',
             '    ├── grandchild1 -- 3.00ms',
             '    └── grandchild2 -- 4.00ms',
-        ]) . PHP_EOL, $root->render());
+        ]).PHP_EOL, $root->render());
     }
 
     public function test_default_clock_is_monotonic_milliseconds()
     {
-        $clock = new Clock();
+        $clock = new Clock;
         $first = $clock->now();
         usleep(2 * 1000);
         $elapsed = $clock->now() - $first;

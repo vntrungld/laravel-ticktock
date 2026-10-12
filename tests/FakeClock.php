@@ -19,7 +19,7 @@ class FakeClock extends Clock
     /**
      * Move the clock forward
      *
-     * @param float $milliseconds
+     * @param  float  $milliseconds
      * @return void
      */
     public function advance($milliseconds)

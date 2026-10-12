@@ -33,23 +33,21 @@ class Node
      */
     protected $children = [];
 
-
     /**
      * Node constructor.
      *
-     * @param string $name
-     * @param Clock|null $clock
+     * @param  Clock|null  $clock
      */
     public function __construct(string $name, $clock = null)
     {
         $this->name = $name;
-        $this->clock = $clock ?: new Clock();
+        $this->clock = $clock ?: new Clock;
     }
 
     /**
      * Set the start time
      *
-     * @param float $time
+     * @param  float  $time
      * @return void
      */
     public function setStartTime($time)
@@ -60,7 +58,7 @@ class Node
     /**
      * Start the timer
      *
-     * @param float|null $time
+     * @param  float|null  $time
      * @return void
      */
     public function start($time = null)
@@ -71,7 +69,7 @@ class Node
     /**
      * End the timer
      *
-     * @param float|null $time
+     * @param  float|null  $time
      * @return void
      */
     public function end($time = null)
@@ -81,8 +79,6 @@ class Node
 
     /**
      * Determine if the timer has not been ended yet
-     *
-     * @return bool
      */
     public function isRunning(): bool
     {
@@ -91,9 +87,6 @@ class Node
 
     /**
      * Add a child node
-     *
-     * @param $name
-     * @return Node
      */
     public function addChild($name): Node
     {
@@ -119,8 +112,6 @@ class Node
 
     /**
      * Get the duration in milliseconds, measured up to now if still running
-     *
-     * @return float
      */
     public function getDuration(): float
     {
@@ -131,15 +122,11 @@ class Node
 
     /**
      * Render the node
-     *
-     * @param string $parent_prefix
-     * @param string $child_prefix
-     * @return string
      */
     public function render(string $parent_prefix = '', string $child_prefix = ''): string
     {
-        $output = $parent_prefix . $this->name . ' -- ' . sprintf('%.2f', $this->getDuration()) . 'ms'
-            . ($this->isRunning() ? ' (running)' : '') . PHP_EOL;
+        $output = $parent_prefix.$this->name.' -- '.sprintf('%.2f', $this->getDuration()).'ms'
+            .($this->isRunning() ? ' (running)' : '').PHP_EOL;
 
         if (empty($this->children)) {
             return $output;
@@ -149,9 +136,9 @@ class Node
 
         foreach ($this->children as $child) {
             if ($child === $last_child) {
-                $output .= $child->render($child_prefix . '└── ', $child_prefix . '    ');
+                $output .= $child->render($child_prefix.'└── ', $child_prefix.'    ');
             } else {
-                $output .= $child->render($child_prefix . '├── ', $child_prefix . '│   ');
+                $output .= $child->render($child_prefix.'├── ', $child_prefix.'│   ');
             }
         }
 

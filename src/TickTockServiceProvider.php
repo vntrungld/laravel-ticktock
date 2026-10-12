@@ -2,7 +2,9 @@
 
 namespace Vntrungld\LaravelTicktock;
 
-class TickTockServiceProvider extends \Illuminate\Support\ServiceProvider
+use Illuminate\Support\ServiceProvider;
+
+class TickTockServiceProvider extends ServiceProvider
 {
     public function register()
     {
