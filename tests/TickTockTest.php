@@ -105,7 +105,8 @@ class TickTockTest extends TestCase
         $this->assertSame(30.0, TickTock::end());
         $this->assertSame(
             self::class.'::test_facade_names_the_calling_method - single -- 30.00ms'.PHP_EOL
-            ."└── Line $line - step1 -- 10.00ms".PHP_EOL,
+            ."├── Line $line - step1 -- 10.00ms".PHP_EOL
+            .'└── (untracked) -- 20.00ms'.PHP_EOL,
             TickTock::render()
         );
     }
@@ -247,6 +248,49 @@ class TickTockTest extends TestCase
             '    ├── grandchild1 -- 3.00ms',
             '    └── grandchild2 -- 4.00ms',
         ]).PHP_EOL, $root->render());
+    }
+
+    public function test_untracked_time_is_hidden_when_zero()
+    {
+        tts('exact');
+        $this->clock->advance(10);
+        tt();
+        tte();
+
+        $this->assertFalse(strpos(ttr(), '(untracked)'));
+    }
+
+    public function test_disabled_timers_are_no_ops()
+    {
+        $ticktock = new \Vntrungld\LaravelTicktock\TickTock($this->clock, false);
+
+        $ticktock->start('off');
+        $this->clock->advance(10);
+
+        $this->assertFalse($ticktock->isEnabled());
+        $this->assertNull($ticktock->capture());
+        $this->assertNull($ticktock->end());
+        $this->assertSame('done', $ticktock->measure('off', function () {
+            return 'done';
+        }));
+        $this->assertSame('', $ticktock->render());
+    }
+
+    public function test_enabled_flag_is_read_from_config()
+    {
+        $this->assertTrue(app(\Vntrungld\LaravelTicktock\TickTock::class)->isEnabled());
+
+        $this->app['config']->set('ticktock.enabled', false);
+        $this->app->forgetInstance(\Vntrungld\LaravelTicktock\TickTock::class);
+
+        $this->assertFalse(app(\Vntrungld\LaravelTicktock\TickTock::class)->isEnabled());
+    }
+
+    public function test_log_is_skipped_without_timers()
+    {
+        Log::shouldReceive('debug')->never();
+
+        ttl();
     }
 
     public function test_default_clock_is_monotonic_milliseconds()

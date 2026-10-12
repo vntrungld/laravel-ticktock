@@ -132,7 +132,8 @@ class Node
             return $output;
         }
 
-        $last_child = end($this->children);
+        $untracked = $this->getUntrackedDuration();
+        $last_child = $untracked > 0 ? null : end($this->children);
 
         foreach ($this->children as $child) {
             if ($child === $last_child) {
@@ -142,6 +143,24 @@ class Node
             }
         }
 
+        if ($untracked > 0) {
+            $output .= $child_prefix.'└── (untracked) -- '.sprintf('%.2f', $untracked).'ms'.PHP_EOL;
+        }
+
         return $output;
+    }
+
+    /**
+     * Get the time between the last child's end and this node's end
+     */
+    public function getUntrackedDuration(): float
+    {
+        $last_child = $this->getLastChild();
+
+        if (! $last_child || $this->isRunning() || $last_child->isRunning()) {
+            return 0.0;
+        }
+
+        return round($this->end_time - $last_child->end_time, 2);
     }
 }

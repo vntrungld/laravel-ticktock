@@ -16,7 +16,7 @@ composer lint                                   # Pint (installed globally, not 
 composer lint:test                              # style check only, as run in CI
 ```
 
-There is no build step. Pint (`pint.json`, Laravel preset) needs PHP 8.1+, so it runs as a global tool and in a separate `pint.yml` workflow rather than through require-dev. `no_multiple_statements_per_line` is disabled on purpose: tests put `tt()` and `__LINE__` on the same line. The test CI (`.github/workflows/run-tests.yml`) runs the suite across a PHP/Laravel matrix from PHP 7.0 + Laravel 5.5 up to PHP 8.2 + Laravel 12, swapping in `illuminate/support` and `orchestra/testbench` versions with `composer require ... --no-update`.
+There is no build step. Pint (`pint.json`, Laravel preset) needs PHP 8.1+, so it runs as a global tool and in a separate `pint.yml` workflow rather than through require-dev. `no_multiple_statements_per_line` is disabled on purpose: tests put `tt()` and `__LINE__` on the same line. The test CI (`.github/workflows/run-tests.yml`) runs the suite across a PHP/Laravel matrix from PHP 7.0 + Laravel 5.5 up to PHP 8.5 + Laravel 13, swapping in `illuminate/support` and `orchestra/testbench` versions with `composer require ... --no-update`.
 
 ## Compatibility constraints
 
@@ -33,6 +33,7 @@ Supported range: PHP `~7.0|~8.0`, Laravel 5.5–12, PHPUnit 6.5–11. Keep all c
 - Segments are contiguous laps: `Node::addChild()` starts a child at the previous sibling's end time, or at the parent's start time. Durations therefore come from capture points and not from per-call start timestamps.
 - Node names come from the call stack. `TickTock::getCaller()` walks `debug_backtrace` to the first frame whose file is outside `src/` and is not Laravel's `Facade.php`. That frame's line becomes "Line N" for captures, and the next frame's `Class::function` becomes the name for starts. This is why calls through the helper, the facade or a direct instance all resolve to the user's code. Any new entry point in `src/` gets the same treatment automatically; anything outside `src/` that wraps these calls would shift the reported caller.
 - Time comes from `Clock::now()`, in milliseconds (`hrtime` falling back to `microtime`). `TickTock` gets a `Clock` from the container, and `Node` inherits its clock from its parent.
+- `config/ticktock.php` (`enabled`, env `TICKTOCK_ENABLED`) is passed into `TickTock` by the service provider. When disabled, only `start()` is guarded: with no open timer, the other methods are already no-ops. `Node::render()` adds an `(untracked)` row for the time between a node's last child and its own end, but only when that time is non-zero.
 - Robustness rules: calling `tt()`/`tte()`/`ttr()` without a running timer must be a no-op, never an error. `measure()` closes every timer it opened, using `try/finally`. The service provider calls `reset()` on `JobProcessing` and Octane `RequestReceived`, through the facade root.
 - `src/helpers.php` (autoloaded via `composer.json` `files`) defines the short global helpers that proxy to the facade. The facade alias `Ticktock` is registered via `extra.laravel.aliases`. The class is `Facades\TickTock`, and the alias key and the class name differ in case on purpose. A test checks that every class listed in `extra.laravel` exists.
 

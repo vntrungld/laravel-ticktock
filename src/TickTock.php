@@ -23,16 +23,34 @@ class TickTock
     protected $cursors = [];
 
     /**
+     * @var bool
+     */
+    protected $enabled;
+
+    /**
      * @var string|null
      */
     protected static $facade_file;
 
     /**
      * TickTock constructor.
+     *
+     * @param  bool  $enabled
      */
-    public function __construct(Clock $clock)
+    public function __construct(Clock $clock, $enabled = true)
     {
         $this->clock = $clock;
+        $this->enabled = (bool) $enabled;
+    }
+
+    /**
+     * Determine if timing is enabled
+     *
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return $this->enabled;
     }
 
     /**
@@ -43,6 +61,11 @@ class TickTock
      */
     public function start($suffix = null)
     {
+        // With no timer opened, capture(), end() and measure() become no-ops too
+        if (! $this->enabled) {
+            return;
+        }
+
         $name = $this->getCaller()['scope'].($suffix ? ' - '.$suffix : '');
         $current_node = end($this->cursors);
 
@@ -157,6 +180,10 @@ class TickTock
      */
     public function log()
     {
+        if (! $this->root) {
+            return;
+        }
+
         Log::debug(PHP_EOL.'[Ticktock]'.PHP_EOL.$this->render());
     }
 

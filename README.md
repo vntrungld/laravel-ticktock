@@ -29,7 +29,7 @@ You can install the package via composer:
 composer require vntrungld/laravel-ticktock
 ```
 
-For Laravel 5.5+, the service provider and facade are auto-discovered. For older setups, add them manually to `config/app.php`:
+The service provider and the `Ticktock` facade are auto-discovered. If your app disables package discovery, register them manually in `config/app.php`:
 
 ```php
 'providers' => [
@@ -109,7 +109,7 @@ App\Services\Report::build -- 132.08ms
     └── Line 62 -- 20.32ms
 ```
 
-Timers that have not been ended yet are shown with a `(running)` marker. Calling `tt()`, `tte()` or `ttr()` without a started timer is a no-op.
+Time spent between the last `tt()` and `tte()` is shown as an `(untracked)` row. Timers that have not been ended yet are shown with a `(running)` marker. Calling `tt()`, `tte()` or `ttr()` without a started timer is a no-op.
 
 ### Exception-safe timing
 
@@ -124,6 +124,16 @@ $users = Ticktock::measure('load users', function () {
 ### Resetting
 
 `Ticktock::reset()` discards the current tree. The tree is reset automatically at the start of every queued job and every Octane request, since those processes reuse the same instance.
+
+## Configuration
+
+Timing is enabled by default. Set `TICKTOCK_ENABLED=false` (for example in production) to turn every timer call into a no-op, so timers accidentally left in the code cost (almost) nothing.
+
+To customise the config file, publish it:
+
+```bash
+php artisan vendor:publish --tag=ticktock-config
+```
 
 ## Testing
 
